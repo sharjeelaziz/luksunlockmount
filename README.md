@@ -1,66 +1,72 @@
-# Vault LUKS Mounter
+# LUKS Volume Manager with HashiCorp Vault
 
-This Bash script automates the process of retrieving LUKS encryption keys from a HashiCorp Vault instance, using them to unlock encrypted disk images, and then mounting those images to a specified directory.
+This repository contains two shell scripts designed to facilitate the secure handling of LUKS encrypted volumes in Linux. The first script, `mountcrypt.sh`, automates the process of retrieving encryption keys from HashiCorp Vault, unlocking the encrypted volume, and mounting it to a specified directory. The second script, `unmountcrypt.sh`, safely unmounts the volume and closes the LUKS container.
 
 ## Prerequisites
 
-Before using this script, ensure you have the following installed and configured on your system:
+Before using these scripts, ensure you have the following prerequisites installed on your system:
 
-- `curl`: For making API requests to HashiCorp Vault.
-- `jq`: For parsing JSON responses from the Vault API.
-- `cryptsetup`: For managing LUKS encrypted volumes.
+- `cryptsetup`: For LUKS volume management.
+- `curl`: For interacting with the HashiCorp Vault API.
+- `jq`: For parsing JSON responses from Vault.
 
-Additionally, you must have:
+Additionally, you should have:
 
-- A running HashiCorp Vault server accessible from the machine where the script will be executed.
-- The Vault CLI or API access configured and a valid token with permissions to read secrets.
+- A running HashiCorp Vault instance with access to the secrets.
+- Properly configured permissions for the Vault token to retrieve the keys.
 
 ## Configuration
 
-1. **Environment Variables**:
-   
-   - `VAULT_TOKEN`: Your Vault authentication token. This script reads the token from this environment variable.
-   
-   Before running the script, export your Vault token as follows:
-   ```bash
-   export VAULT_TOKEN="your_vault_token_here"
-   ```
-
-2. **Script Variables** (Edit in the script):
-   
-   - `vaultAddr`: The address of your HashiCorp Vault server (e.g., `http://your_vault_server:8200`).
-   - `secretPath`: The path in Vault where your LUKS key is stored (e.g., `secret/data/yourSecretPath`).
+1. **Vault Configuration**: Set up your Vault server and store the LUKS keys as secrets. Ensure your Vault token has the necessary permissions to access these secrets.
+    
+2. **Environment Variables**:
+    
+    - `VAULT_TOKEN`: This environment variable must be set with your Vault access token before running the scripts.
 
 ## Usage
 
-To use the script, you need to pass the path of the encrypted disk image and the mount path as arguments.
+### Mounting Encrypted Volumes
 
-```bash
-./mount_encrypted_images.sh /path/to/encrypted/image.img /path/to/mount/point
-```
+To mount an encrypted volume, use the `mountcrypt.sh` script with the following syntax:
 
-### Example:
+bash
 
-```bash
-./mount_encrypted_images.sh /mnt/data/vault/encrypted-disk.img /mnt/decrypted
-```
+`./mountcrypt.sh <Path to Encrypted Image> <Mount Point>`
 
-This command retrieves the LUKS key for the specified image from Vault, unlocks the image, and mounts it to the specified mount point.
+Example:
+
+bash
+
+`./mountcrypt.sh /path/to/encrypted.img /mnt/myvolume`
+
+### Unmounting Encrypted Volumes
+
+To unmount and close an encrypted volume, use the `unmountcrypt.sh` script with the following syntax:
+
+bash
+
+`./unmountcrypt.sh <Mount Point>`
+
+Example:
+
+bash
+
+`./unmountcrypt.sh /mnt/myvolume`
+
+This script will automatically detect the LUKS volume associated with the mount point, unmount it, and securely close the volume.
 
 ## Security Considerations
 
-- **Do not hard-code** your Vault token or any sensitive information in the script.
-- Ensure that **permissions for the script** are set to prevent unauthorized access or modification.
-- Regularly **rotate your Vault tokens** and encryption keys in line with your organization's security policies.
-- Use this script in a **secure and trusted environment** to avoid exposing sensitive information.
+- Do not hard-code your Vault token or any sensitive information within the scripts.
+- Ensure the scripts are executed in a secure environment, with minimal permissions necessary.
+- Regularly rotate your Vault tokens and encryption keys according to your security policy.
 
 ## Troubleshooting
 
-- Ensure all prerequisites are installed and properly configured.
-- Verify that the `VAULT_TOKEN` environment variable is set with a valid token.
-- Confirm that the Vault server address and secret path in the script are correct.
-- Check the permissions of the disk image and mount point to ensure the script can access them.
+- Verify that all prerequisites are installed and accessible.
+- Ensure your Vault token is correctly set and has the necessary permissions.
+- Check the paths and names used in the scripts for accuracy.
 
 ## License
 
-This script is provided "as is", without warranty of any kind. Use it at your own risk.
+This project is licensed under the MIT License - see the LICENSE file for details.
